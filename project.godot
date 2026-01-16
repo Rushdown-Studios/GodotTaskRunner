@@ -1,0 +1,223 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
+[application]
+
+config/name="Godot Task Runner"
+run/main_scene="uid://cqow47bch5ocs"
+config/features=PackedStringArray("4.5", "Forward Plus")
+config/icon="uid://38jen8pjyljl"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/TaskRunner/plugin.cfg")
+
+[task_runner]
+
+tasks=[{
+"task_command": "# This is a sample bash script
+# Bash scripts are meant to run on unixes and may crash on windows.
+
+echo \"Stdout logs will be displayed in the task runner\"
+echo \"Stderr logs will also be displayed\" 1>&2
+
+# You can also output structured json messages.
+# These messages can be caught and handled in a parent task.
+echo 'TRTASK_MESSAGE_PREFIX {\"build_status\": \"PASSED\"}'
+
+# Tasks run in the background. Long sleeps are handled gracefully.
+echo \"Sleeping for 5 seconds\"
+sleep 5
+echo \"Sleep finished\"
+
+# Exit codes are captured and displayed.
+exit 15
+",
+"task_filepath": "",
+"task_name": "Sample - Bash",
+"task_source": "INLINE",
+"task_type": "BASH"
+}, {
+"task_command": "@echo off
+REM This is a sample batch script
+REM Batch scripts are meant to run on windows and may crash on unixes.
+
+echo Stdout logs will be displayed in the task runner
+echo Stderr logs will also be displayed 1>&2
+
+REM You can also output structured json messages.
+REM These messages can be caught and handled in a parent task.
+echo TRTASK_MESSAGE_PREFIX {\"build_status\": \"PASSED\"}
+
+REM Exit codes are captured and displayed.
+exit /b 15
+",
+"task_filepath": "",
+"task_name": "Sample - cmd.exe",
+"task_source": "INLINE",
+"task_type": "CMD"
+}, {
+"task_command": "# This is a sample PowerShell script
+# Powershell scripts are meant to run on windows and may crash on unixes.
+
+Write-Output \"Stdout logs will be displayed in the task runner\"
+Write-Error \"Stderr logs will also be displayed\"
+
+# You can also output structured json messages.
+# These messages can be caught and handled in a parent task.
+Write-Output 'TRTASK_MESSAGE_PREFIX {\"build_status\": \"PASSED\"}'
+
+# Tasks run in the background. Long sleeps are handled gracefully.
+Write-Output \"Sleeping for 5 seconds\"
+Start-Sleep -Seconds 5
+Write-Output \"Sleep finished\"
+
+# Exit codes are captured and displayed.
+exit 15
+",
+"task_filepath": "",
+"task_name": "Sample - Powershell",
+"task_source": "INLINE",
+"task_type": "POWERSHELL"
+}, {
+"task_command": "
+# This is a sample GDScript script
+# GDScript tasks can be run in the editor process like a tool script, or in a background godot process.
+# Use the dropdown below to switch between \"new process gdscript\" and \"in editor gdscript\" modes.
+func run(r: TRTaskRun):
+	
+	r.log(\"Logs will be displayed in the task runner\")
+	r.log_error(\"Error logs will also be displayed\")
+	print(\"If the task is run in a new process, stdout and stderr logs are also capture\")
+	print(\"If it is run in editor, print logs will not be captured and you must use r.log\")
+
+	# You can output structured json messages.
+	# These messages can be caught and handled in a parent task.
+	# Messages can be sent from a new process to the editor process.
+	r.log_message({\"build_status\": \"PASSED\"})
+
+	# Tasks run in the background. Long sleeps are handled gracefully.
+	r.log(\"Sleeping for 5 seconds\")
+	await Engine.get_main_loop().create_timer(5).timeout
+	r.log(\"Sleep finished\")
+
+	# You may optionally return an exit status string.
+	return \"15\"
+",
+"task_filepath": "",
+"task_name": "Sample - GDScript",
+"task_source": "INLINE",
+"task_type": "NEW_PROCESS_GDSCRIPT"
+}, {
+"task_command": "
+
+# In this sample, we spawn a demonstrate how to propogate a messaghe from the child task to the parent.
+func run(r: TRTaskRun):
+	
+	# Create a child task and start it
+	var subtask: TRTaskRun = r.run_subtask(\"Sample - GDScript\")
+	
+	subtask.on_message.connect(func(m: TRTaskRun.LogMessage):
+		r.log(\"Subtask message received: \" + m.message.build_status)
+	)
+	
+	# Wait for the child task to end
+	await subtask.await_end()
+	
+	return \"Finished\"
+",
+"task_filepath": "",
+"task_name": "Sample - Message Passing",
+"task_source": "INLINE",
+"task_type": "NEW_PROCESS_GDSCRIPT"
+}, {
+"task_command": "
+
+# In this sample, we run two scenes in background tasks and connect the debugger to them.
+func run(r: TRTaskRun):
+	var dh: TRDebugHelper = TRDebugHelper.new(r)
+	
+	# Start two scenes as background processes and connect the debugger to them
+	# Each scene can receive seperate CLI arguments
+	# The TRCliArgs class is included in this addon and can optionally be used to parse CLI arguments, if that's useful.
+	var scene_one = dh.run_scene_task(\"res://addons/TaskRunner/Examples/SampleScenes/sample_scene_1.tscn\", [\"--userdefinedargument\", \"one\"])
+	var scene_two = dh.run_scene_task(\"res://addons/TaskRunner/Examples/SampleScenes/sample_scene_2.tscn\", [\"--userdefinedargument\", \"two\"])
+	
+	# Wait for both scenes to exit
+	await scene_one.await_end()
+	await scene_two.await_end()
+",
+"task_filepath": "",
+"task_name": "Sample - Debug Games",
+"task_source": "INLINE",
+"task_type": "IN_EDITOR_GDSCRIPT"
+}, {
+"task_command": "# In this sample, we show some more complicated uses of subtasks.
+func run(r: TRTaskRun):
+	# In GDScript, a task run is defined as a TRTaskRun. This class has helper methods for spawning child tasks.
+	# A task run can be not started, running, or finished.
+	
+	# You can either create a task run from a named task, or anonymously:
+	var named_task: TRTaskRun = r.create_subtask(\"Sample - GDScript\")
+	var anon_task: TRTaskRun = r.create_anon_subtask(\"Anonymous Task\", func(subtask_run: TRTaskRun):
+		subtask_run.log(\"hello world\")
+	)
+	
+	# These tasks have not started yet. To start them, call:
+	named_task.run_task()
+	await named_task.await_end() # Then wait for them to finish
+	anon_task.run_task()
+	await anon_task.await_end()
+	
+	# Additionally, you can create and run a task via a single method call:
+	await r.run_anon_subtask(\"Anonymous Task 2\", func(s): s.log(\"hello world 2\")).await_end()
+	
+	# By default, all logs from a subtask appear in the parent task's logs. To prevent this, you can set the second argument to false:
+	await r.run_subtask(\"Sample - GDScript\", false).await_end()
+	
+	# Tasks can be canceled. This typically means the background process will be killed, which happens fairly quickly.
+	# In the case of in editor gdscript, canceling will set a flag which the task must respect.
+	
+	# This task typically sleeps for 5 seconds. We will start the task, sleep for 2.5 seconds, then kill the task.
+	var background_script: TRTaskRun = r.run_subtask(\"Sample - GDScript\")
+	await Engine.get_main_loop().create_timer(2.5).timeout
+	background_script.cancel_task()
+	
+",
+"task_filepath": "",
+"task_name": "Sample - Subtask Management",
+"task_source": "INLINE",
+"task_type": "IN_EDITOR_GDSCRIPT"
+}, {
+"task_command": "
+# In this sample, we create a yes/no popup in the godot editor and use it's result within the task.
+func run(r: TRTaskRun):
+	
+	# Helper function for creating a confirmation model. Returns true if the user agreed with the prompt.
+	var result = await TRUtils.confirm_dialog(\"Sample Dialog\", \"Sample Dialog. Are you cool?\", \"Yeah!\", \"Not today\")
+	
+	r.log(\"User confirmed: \" + str(result))
+	
+",
+"task_filepath": "",
+"task_name": "Sample - Editor Popup",
+"task_source": "INLINE",
+"task_type": "IN_EDITOR_GDSCRIPT"
+}, {
+"task_command": "",
+"task_filepath": "res://addons/TaskRunner/Examples/SampleTasks/on_disk_task_sample.gd",
+"task_name": "Sample - On Disk Task",
+"task_source": "ON_DISK",
+"task_type": "IN_EDITOR_GDSCRIPT"
+}]
