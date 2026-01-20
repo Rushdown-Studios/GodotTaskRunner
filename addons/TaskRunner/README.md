@@ -28,12 +28,9 @@ Godot Task Runner is an editor plugin that lets you write and execute scripts in
 
 ### Installation
 
-Follow the [official Godot plugin installation guide](https://docs.godotengine.org/en/stable/tutorials/plugins/editor/installing_plugins.html) to install from the Asset Library (coming soon) or manually from GitHub.
+Follow the [official Godot plugin installation guide](https://docs.godotengine.org/en/stable/tutorials/plugins/editor/installing_plugins.html) to install from the Asset Library or install manually from GitHub. The plugin can be found in the Asset Library [on this page](https://godotengine.org/asset-library/asset/4678).
 
-> [!IMPORTANT]
-> The Task Runner is currently under review for the official Godot Asset Library. You must install manually.
-
-**From Asset Library** (coming soon):
+**From Asset Library**:
 1. Open the AssetLib tab in Godot
 1. Search for "Godot Task Runner"
 1. Download and install
@@ -58,7 +55,7 @@ The Task Runner automatically switches to the **Task Runs** tab to display your 
 
 ## Documentation
 
-Documentation is available in `Docs/`. See [README.md](Docs/README.md) for a complete table of contents.
+Documentation is available in `Docs/`. See [documentation](Docs/README.md) for a complete table of contents.
 
 Topics covered include:
 
@@ -68,7 +65,7 @@ Topics covered include:
 
 ## Examples
 
-Explore practical examples in `Examples/`. See [README.md](Examples/README.md) for details.
+Explore practical examples in `Examples/`. See [examples](Examples/README.md) for details.
 
 Examples include:
 - Sample tasks demonstrating each supported language
