@@ -66,6 +66,19 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="ExtensionSection" type="HBoxContainer" parent="PanelContainer/NewTaskContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="TaskExtensionLabel" type="Label" parent="PanelContainer/NewTaskContainer/VBoxContainer/ExtensionSection"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Task Extension"
+
+[node name="TaskExtensionOption" type="OptionButton" parent="PanelContainer/NewTaskContainer/VBoxContainer/ExtensionSection"
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="SourceSection" type="HBoxContainer" parent="PanelContainer/NewTaskContainer/VBoxContainer"]
 layout_mode = 2
 
