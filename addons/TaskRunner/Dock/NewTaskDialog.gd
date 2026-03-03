@@ -7,12 +7,13 @@ static var DEFAULT_TASK_FOLDER: String = "res://"
 
 var dock: TRTaskRunnerDock
 var task_type_options: Dictionary[int, TRTaskRunner.TaskType] = {}
+var task_extension_options: Dictionary[int, String] = {}
 
 signal on_task_created(task: TRTask)
 
 var _file_select_dialog_open: bool = false
 
-@onready var row_labels: Array[Label] = [%TaskNameLabel, %TaskTypeLabel, %TaskSourceLabel, %TaskFolderLabel, %TaskFileNameLabel]
+@onready var row_labels: Array[Label] = [%TaskNameLabel, %TaskTypeLabel, %TaskExtensionLabel, %TaskSourceLabel, %TaskFolderLabel, %TaskFileNameLabel]
 
 func _input(event: InputEvent) -> void:
 	if not has_focus(): return
@@ -48,7 +49,6 @@ func _ready() -> void:
 		task_type_options[id] = type
 		%TaskTypeOption.add_item(type.friendly_name(), id)
 		id += 1
-	
 	match OS.get_name():
 		"Windows":
 			%TaskTypeOption.select(%TaskTypeOption.get_item_index(get_task_type_id("POWERSHELL")))
@@ -64,9 +64,17 @@ func _ready() -> void:
 	update_path_state()
 	
 	%TaskTypeOption.item_selected.connect(func(i):
+		_update_task_extension_options()
 		_update_task_file_extension()
 	)
+
+	%TaskExtensionOption.item_selected.connect(func(i):
+		_update_task_file_extension()
+	)
+
+	_update_task_extension_options()
 	_update_task_file_extension()
+
 	
 	%SelectTaskFolder.pressed.connect(func():
 		_file_select_dialog_open = true
@@ -160,6 +168,15 @@ func _task_name_to_filename(task_name: String):
 
 	return task_name
 
+func _update_task_extension_options():
+	%TaskExtensionOption.clear()
+	task_extension_options.clear()
+	var id = 0
+	for extension in current_task_type().type_extensions:
+		task_extension_options[id] = extension
+		%TaskExtensionOption.add_item(extension, id)
+		id += 1
+
 func _update_task_file_extension():
 	var parts: PackedStringArray = %TaskFileNameEdit.text.split(".")
 	var current_file: String = ""
@@ -168,7 +185,8 @@ func _update_task_file_extension():
 	else:
 		current_file = ".".join(parts.slice(0, -1))
 	
-	%TaskFileNameEdit.text = current_file + "." + current_task_type().type_extensions[0]
+	var current_extension = task_extension_options[%TaskExtensionOption.get_item_id(%TaskExtensionOption.selected)]
+	%TaskFileNameEdit.text = current_file + "." + current_extension
 
 func current_task_type() ->TRTaskRunner.TaskType:
 	return task_type_options[%TaskTypeOption.get_item_id(%TaskTypeOption.selected)]

@@ -11,7 +11,7 @@ We welcome contributions that improve the Task Runner plugin! Here's how to get 
 - Create a feature branch with a descriptive name: `git checkout -b feature/add-python-support or git checkout -b fix/output-encoding-issue`
 - Make your changes and commit them with clear, descriptive commit messages
 - Push to your fork: `git push origin feature/your-feature-name`
-- Open a Pull Request from your feature branch to our main repository
+- Open a Pull Request from your feature branch to our main repository against the `dev` branch
 
 ### What We're Looking For
 
