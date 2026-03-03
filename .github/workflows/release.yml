@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version from plugin.cfg
+        id: version
+        run: |
+          VERSION=$(grep -m1 '^version=' addons/TaskRunner/plugin.cfg | cut -d'"' -f2)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create tag and release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: release_${{ steps.version.outputs.version }}
+          name: release_${{ steps.version.outputs.version }}
+          make_latest: true
+          generate_release_notes: true
